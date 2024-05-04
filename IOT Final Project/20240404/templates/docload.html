@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatic Page Navigation</title>
+</head>
+<body>    
+    <script>
+        window.onload = function() {
+            // Simulate server connection disconnect after 5 seconds
+            setTimeout(function() {
+                window.location.href = 'http://127.0.0.1:5000/disconnected'; // Redirect to a disconnected page
+            }, 1000); // 5000 milliseconds (5 seconds)
+
+            // Redirect to another page after 10 seconds
+            setTimeout(function() {
+                window.location.href = 'Doctor.html'; // Redirect to another page
+            }, 10000); // 10000 milliseconds (10 seconds)
+        }
+    </script>
+</body>
+</html>

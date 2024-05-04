@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Recognition Login</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif; /* Updated font-family */
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #fcfbfb;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #video {
+            width: 500px;
+            height: 500px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #loginButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #loginButton:hover {
+            background-color: #0056b3;
+        }
+
+        #messageBox {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #messageBox.success {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        #messageBox.error {
+            background-color: #dc3545;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Face Recognition Login</h1>
+        <video id="video" width="640" height="480" autoplay></video>
+        <button id="loginButton">Login with Face Recognition</button>
+        <div id="messageBox"></div>
+    </div>
+
+    <script>
+        // Get access to the webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                var video = document.getElementById("video");
+                video.srcObject = stream;
+            })
+            .catch(function(err) {
+                console.log("An error occurred: " + err);
+            });
+
+        // When the login button is clicked
+        document.getElementById("loginButton").addEventListener("click", function() {
+            var video = document.getElementById("video");
+            var canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Get the image data from the canvas
+            var imageData = canvas.toDataURL('image/jpeg');
+
+            // Send the image data to the server for face recognition
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image_data: imageData })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text(); // Return the text response
+                } else {
+                    throw new Error('Face recognition failed');
+                }
+            })
+            .then(data => {
+                // Display message based on server response
+                var messageBox = document.getElementById('messageBox');
+                if (data.includes('Welcome')) {
+                    var username = data.split(',')[1].trim();
+                    messageBox.className = 'success';
+                    messageBox.textContent = 'Welcome , You have successfully logged in....!';
+                    messageBox.style.display = 'block';
+                    setTimeout(function() {
+                        window.location.href = '/success/' + username; // Redirect to success page after 2 seconds
+                    }, 2000);
+                } else {
+                    messageBox.className = 'error';
+                    messageBox.textContent = data; // Display the response from the server (e.g., "Unknown user")
+                    messageBox.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Login failed'); // Display an error message
+            });
+        });
+    </script>
+</body>
+</html>

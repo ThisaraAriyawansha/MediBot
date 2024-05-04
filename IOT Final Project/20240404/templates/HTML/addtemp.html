@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Inventory</title>
+    <!-- Include Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+</head>
+<body>
+    <h1>Medicine Inventory</h1>
+    <div id="medicineData">
+        <p>Medicine Aspirin: <span id="aspirinQuantity"></span></p>
+        <p>Medicine Metformin: <span id="metforminQuantity"></span></p>
+        <p>Medicine Paracetamol: <span id="paracetamolQuantity"></span></p>
+        <p>Medicine Prednisone: <span id="prednisoneQuantity"></span></p>
+        <p>Medicine Syrup: <span id="syrupQuantity"></span></p>
+    </div>
+
+    <h2>Update Medicine Quantities</h2>
+    <form id="medicineForm">
+        <label for="aspirin">Aspirin:</label>
+        <input type="number" id="aspirin" name="aspirin" min="0"><br><br>
+
+        <label for="metformin">Metformin:</label>
+        <input type="number" id="metformin" name="metformin" min="0"><br><br>
+
+        <label for="paracetamol">Paracetamol:</label>
+        <input type="number" id="paracetamol" name="paracetamol" min="0"><br><br>
+
+        <label for="prednisone">Prednisone:</label>
+        <input type="number" id="prednisone" name="prednisone" min="0"><br><br>
+
+        <label for="syrup">Syrup:</label>
+        <input type="number" id="syrup" name="syrup" min="0"><br><br>
+
+        <input type="button" value="Update Quantities" onclick="updateMedicineQuantities()">
+    </form>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3fBxb1wgLM5a4_LEVsaBcTdT2g7nbJwA",
+            authDomain: "",
+            databaseURL: "https://servoweb-8fda8-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "servoweb-8fda8",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // Function to update medicine quantities in Firebase
+        function updateMedicineQuantities() {
+            const form = document.getElementById('medicineForm');
+            const aspirin = form.elements['aspirin'].value;
+            const metformin = form.elements['metformin'].value;
+            const paracetamol = form.elements['paracetamol'].value;
+            const prednisone = form.elements['prednisone'].value;
+            const syrup = form.elements['syrup'].value;
+
+            firebase.database().ref('Medicine').update({
+                Aspirin: parseInt(aspirin),
+                Metformin: parseInt(metformin),
+                Paracetamol: parseInt(paracetamol),
+                Prednisone: parseInt(prednisone),
+                Syrup: parseInt(syrup)
+            }).then(() => {
+                console.log('Medicine quantities updated successfully');
+                alert('Medicine quantities updated successfully');
+            }).catch(error => {
+                console.error('Error updating medicine quantities:', error);
+                alert('Error updating medicine quantities. Check console for details.');
+            });
+        }
+    </script>
+</body>
+</html>

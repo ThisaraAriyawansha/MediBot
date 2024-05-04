@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../CSS/create_account.css">
+    <title>Registration</title>
+</head>
+<body>
+    <div class="wrapper">
+        <nav class="nav">
+            <div class="nav-logo">
+                <p style="font-family: 'Times New Roman', Times, serif;">MediBot System.....</p>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <ul>
+                    <li><a href="#" class="link active"></a></li>
+                    <li><a href="#" class="link"></a></li>
+                    <li><a href="#" class="link"></a></li>
+                    <li><a href="#" class="link"></a></li>
+                </ul>
+            </div>
+            <div class="nav-button"></div>
+            <div class="nav-menu-btn">
+                <i class="bx bx-menu" onclick="myMenuFunction()"></i>
+            </div>
+        </nav>
+        <div class="form-box">
+            <form id="registrationForm" action="insert_data.php" method="POST" onsubmit="return validateForm()">
+                <div class="top">
+                    <span>Have an account? <a href="#" onclick="login()">Login</a></span>
+                    <header style="font-family: 'Times New Roman', Times, serif;">Sign Up</header>
+                </div>
+                <div class="two-forms">
+                    <div class="input-box">
+                        <input type="text" id="rfidField" name="rfid" class="input-field" placeholder="RFID NO"><br><br>
+                        <i class="bx bx-user"></i>
+                    </div>
+                    <div class="input-box">
+                        <button type="button" class="submit" style="width: 150px;" onclick="getMaxRFID()">GET RFID NO</button><br><br>
+                        <i class="bx bx-user"></i>
+                    </div>
+                </div>
+                <div class="input-box">
+                    <input type="text" name="full_name" id="full_name" class="input-field" placeholder="Full Name"><br><br>
+                    <i class="bx bx-envelope"></i>
+                </div>
+                <div class="input-box">
+                    <input type="text" name="email" id="email" class="input-field" placeholder="Email"><br><br>
+                    <i class="bx bx-lock-alt"></i>
+                </div>
+                <div class="input-box">
+                    <input type="text" name="phone" id="phone" class="input-field" placeholder="Phone"><br><br>
+                    <i class="bx bx-envelope"></i>
+                </div>
+                <div class="input-box">
+                    <input type="submit" class="submit" value="Register"><br><br>
+                </div>
+                <div class="two-col">
+                    <div class="one">
+                        <input type="checkbox" id="register-check">
+                        <label for="register-check"> Remember Me</label>
+                    </div>
+                    <div class="two">
+                        <label><a href="#">Terms & conditions</a></label>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function validateForm() {
+            var fullName = document.getElementById('full_name').value.trim();
+            var email = document.getElementById('email').value.trim();
+            var phone = document.getElementById('phone').value.trim();
+            var rfid = document.getElementById('rfidField').value.trim();
+
+            // Check if Full Name is empty
+            if (fullName === '') {
+                alert('Please enter your Full Name.');
+                return false; // Prevent form submission
+            }
+
+            // Check if Email is empty and in valid format
+            if (email === '') {
+                alert('Please enter your Email.');
+                return false; // Prevent form submission
+            } else {
+                var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) {
+                    alert('Please enter a valid Email.');
+                    return false; // Prevent form submission
+                }
+            }
+
+            // Check if Phone is empty and matches the pattern (e.g., 123-456-7890)
+            if (phone === '') {
+                alert('Please enter your Phone number.');
+                return false; // Prevent form submission
+            } else {
+                var phonePattern = /^\d{10}$/;
+                if (!phonePattern.test(phone)) {
+                    alert('Please enter a valid Phone number in the format 123-456-7890.');
+                    return false; // Prevent form submission
+                }
+            }
+
+            // Check if RFID is empty
+            if (rfid === '') {
+                alert('Please click "GET RFID NO" to retrieve your RFID number.');
+                return false; // Prevent form submission
+            }
+
+            // If all validations pass, allow form submission
+            return true;
+        }
+    </script>
+    <script>
+   
+        function myMenuFunction() {
+         var i = document.getElementById("navMenu");
+         if(i.className === "nav-menu") {
+             i.className += " responsive";
+         } else {
+             i.className = "nav-menu";
+         }
+        }
+      
+     </script>
+     <script>
+         var a = document.getElementById("loginBtn");
+         var b = document.getElementById("registerBtn");
+         var x = document.getElementById("login");
+         var y = document.getElementById("register");
+         function login() {
+             x.style.left = "4px";
+             y.style.right = "-520px";
+             a.className += " white-btn";
+             b.className = "btn";
+             x.style.opacity = 1;
+             y.style.opacity = 0;
+         }
+         function register() {
+             x.style.left = "-510px";
+             y.style.right = "5px";
+             a.className = "btn";
+             b.className += " white-btn";
+             x.style.opacity = 0;
+             y.style.opacity = 1;
+         }
+     
+         function getMaxRFID() {
+     
+             fetch('get_max_rfid.php')
+                 .then(response => response.json())
+                 .then(data => {
+                     document.getElementById('rfidField').value = data.rfid_no;
+                 })
+                 .catch(error => console.error('Error:', error));
+         }
+     </script>
+     <script>
+         // Function to display a message box and redirect
+         function showMessageAndRedirect(message, redirectUrl) {
+             alert(message); // Display the message
+             window.location.href = redirectUrl; // Redirect to the specified URL
+         }
+     
+         // Check if a success message is present in the URL
+         var urlParams = new URLSearchParams(window.location.search);
+         var successMessage = urlParams.get('message');
+     
+         if (successMessage !== null && successMessage !== "") {
+             // Example usage:
+             var redirectUrl = "create-account.html"; // Specify the URL to redirect to
+             showMessageAndRedirect(successMessage, redirectUrl);
+         }
+     </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

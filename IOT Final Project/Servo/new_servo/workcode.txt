@@ -1,0 +1,166 @@
+#include <Firebase_ESP_Client.h>
+#include <ESP32Servo.h>
+
+// Insert your network credentials
+#define WIFI_SSID "MSI"
+#define WIFI_PASSWORD "0000000000"
+
+// Insert Firebase project API Key
+#define API_KEY "AIzaSyA3fBxb1wgLM5a4_LEVsaBcTdT2g7nbJwA"
+
+// Insert RTDB URL
+#define DATABASE_URL "https://servoweb-8fda8-default-rtdb.asia-southeast1.firebasedatabase.app/"
+
+// Define Firebase Data object
+FirebaseData fbdo;
+
+FirebaseAuth auth;
+FirebaseConfig config;
+
+unsigned long sendDataPrevMillis = 0;
+bool signupOK = false;
+
+bool runOnce = true; // Flag to control loop execution
+
+
+const int SERVO_PIN_1 = 4;   // Pin for servo motor 1
+const int SERVO_PIN_2 = 5;  // Pin for servo motor 2
+const int SERVO_PIN_3 = 13;  // Pin for servo motor 3
+const int SERVO_PIN_4 = 14;  // Pin for servo motor 4
+
+Servo servoMotor1;
+Servo servoMotor2;
+Servo servoMotor3;
+Servo servoMotor4;
+
+
+void setup() {
+  pinMode(2, OUTPUT); // Assuming you have an LED connected to pin 2
+  Serial.begin(115200);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(300);
+  }
+  Serial.println();
+  Serial.print("Connected with IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.println();
+
+  /* Assign the API key (required) */
+  config.api_key = API_KEY;
+
+  /* Assign the RTDB URL (required) */
+  config.database_url = DATABASE_URL;
+
+  /* Sign up */
+  if (Firebase.signUp(&config, &auth, "", "")) {
+    Serial.println("Firebase SignUp Successful");
+    signupOK = true;
+  } else {
+    Serial.printf("Firebase SignUp Error: %s\n", config.signer.signupError.message.c_str());
+  }
+
+  Firebase.begin(&config, &auth);
+  Firebase.reconnectWiFi(true);
+
+    servoMotor1.attach(SERVO_PIN_1);
+    servoMotor2.attach(SERVO_PIN_2);
+    servoMotor3.attach(SERVO_PIN_3);
+    servoMotor4.attach(SERVO_PIN_4);
+
+    servoMotor1.write(0);  // Set initial position of servo motor 1 to 0 degrees
+    servoMotor2.write(0);  // Set initial position of servo motor 2 to 0 degrees
+    servoMotor3.write(0);  // Set initial position of servo motor 3 to 0 degrees
+    servoMotor4.write(0);  // Set initial position of servo motor 4 to 0 degrees
+
+}
+
+void loop() {
+  int paracetamolQuantity;
+  int aspirinQuantity;
+  int metforminQuantity;
+  int prednisoneQuantity;
+
+  if (runOnce && Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 5000 || sendDataPrevMillis == 0)) {
+    sendDataPrevMillis = millis();
+
+    // Read medicine quantities from Firebase
+    if (Firebase.RTDB.getInt(&fbdo, "Medicine/Paracetamol") && fbdo.dataType() == "int") {
+      paracetamolQuantity = fbdo.intData();
+      Serial.print("Paracetamol Quantity: ");
+      Serial.println(paracetamolQuantity);
+    } else {
+      Serial.println("Error reading Paracetamol quantity!");
+    }
+
+ if (Firebase.RTDB.getInt(&fbdo, "Medicine/Aspirin") && fbdo.dataType() == "int") {
+      aspirinQuantity = fbdo.intData();
+      Serial.print("Aspirin Quantity: ");
+      Serial.println(aspirinQuantity);
+    } else {
+      Serial.println("Error reading Aspirin quantity!");
+    }
+
+    if (Firebase.RTDB.getInt(&fbdo, "Medicine/Metformin") && fbdo.dataType() == "int") {
+      metforminQuantity = fbdo.intData();
+      Serial.print("Metformin Quantity: ");
+      Serial.println(metforminQuantity);
+    } else {
+      Serial.println("Error reading Metformin quantity!");
+    }
+
+    if (Firebase.RTDB.getInt(&fbdo, "Medicine/Prednisone") && fbdo.dataType() == "int") {
+      prednisoneQuantity = fbdo.intData();
+      Serial.print("Prednisone Quantity: ");
+      Serial.println(prednisoneQuantity);
+    } else {
+      Serial.println("Error reading Prednisone quantity!");
+    }
+    Serial.println("Servo Angles Read from Firebase");
+
+    // Smooth rotation for Paracetamol
+    smoothRotate(servoMotor1, paracetamolQuantity, 180);  // Smoothly rotate servoMotor1
+    // Smooth rotation for Aspirin
+    smoothRotate(servoMotor2, aspirinQuantity, 180);  // Smoothly rotate servoMotor2
+    // Smooth rotation for Metformin
+    smoothRotate(servoMotor3, metforminQuantity, 180);  // Smoothly rotate servoMotor3
+    // Smooth rotation for Prednisone
+    smoothRotate(servoMotor4, prednisoneQuantity, 180);  // Smoothly rotate servoMotor4
+
+    // Reset quantities in Firebase
+    Firebase.RTDB.setInt(&fbdo, "Medicine/Paracetamol", 0);
+    Firebase.RTDB.setInt(&fbdo, "Medicine/Aspirin", 0);
+    Firebase.RTDB.setInt(&fbdo, "Medicine/Metformin", 0);
+    Firebase.RTDB.setInt(&fbdo, "Medicine/Prednisone", 0);
+    Serial.println("RESET");
+  } else {
+    Serial.println("Error reading Servo Angles from Firebase");
+  }
+
+  // Your other code here...
+}
+
+void smoothRotate(Servo &servo, int quantity, int targetAngle) {
+  const int stepDelay = 10;  // Delay between each step in milliseconds
+  int currentAngle = 0;
+
+  for (int i = 0; i < quantity; i++) {
+    // Gradually increase the angle
+    for (int angle = 0; angle <= targetAngle; angle++) {
+      servo.write(angle);
+      delay(stepDelay);
+    }
+
+    delay(1000);  // Wait for stability
+
+    // Gradually decrease the angle back to 0
+    for (int angle = targetAngle; angle >= 0; angle--) {
+      servo.write(angle);
+      delay(stepDelay);
+    }
+
+    delay(1000);  // Wait for stability
+  }
+}
